@@ -88,7 +88,11 @@ class BookController extends \BaseController {
 
 		$authors = Author::getIdNamePair();
 
-    	return View::make('book_add')->with('authors',$authors);
+		$tags = Tag::getIdNamePair();
+
+    	return View::make('book_add')
+    		->with('authors',$authors)
+    		->with('tags',$tags);
 
 	}
 
@@ -102,11 +106,17 @@ class BookController extends \BaseController {
 		# Instantiate the book model
 		$book = new Book();
 
-		$book->fill(Input::all());
+		$book->fill(Input::except('tags'));
+
+		# Note this save happens before we enter any tags (next step)
 		$book->save();
 
-		# Magic: Eloquent
-		$book->save();
+		foreach(Input::get('tags') as $tag) {
+
+			# This enters a new row in the book_tag table
+			$book->tags()->save(Tag::find($tag));
+
+		}
 
 		return Redirect::action('BookController@getIndex')->with('flash_message','Your book has been added.');
 
@@ -120,8 +130,15 @@ class BookController extends \BaseController {
 	public function getEdit($id) {
 
 		try {
-		    $book    = Book::findOrFail($id);
-		    $authors = Author::getIdNamePair();
+
+			# Get all the authors (used in the author drop down)
+			$authors = Author::getIdNamePair();
+
+			# Get this book and all of its associated tags
+		    $book    = Book::with('tags')->findOrFail($id);
+
+		    # Get all the tags (not just the ones associated with this book)
+		    $tags    = Tag::getIdNamePair();
 		}
 		catch(exception $e) {
 		    return Redirect::to('/book')->with('flash_message', 'Book not found');
@@ -129,7 +146,8 @@ class BookController extends \BaseController {
 
     	return View::make('book_edit')
     		->with('book', $book)
-    		->with('authors', $authors);
+    		->with('authors', $authors)
+    		->with('tags', $tags);
 
 	}
 
@@ -141,17 +159,27 @@ class BookController extends \BaseController {
 	public function postEdit() {
 
 		try {
-	        $book = Book::findOrFail(Input::get('id'));
+	        $book = Book::with('tags')->findOrFail(Input::get('id'));
 	    }
 	    catch(exception $e) {
 	        return Redirect::to('/book')->with('flash_message', 'Book not found');
 	    }
 
-	    # http://laravel.com/docs/4.2/eloquent#mass-assignment
-	    $book->fill(Input::all());
-	    $book->save();
+	    try {
+		    # http://laravel.com/docs/4.2/eloquent#mass-assignment
+		    $book->fill(Input::except('tags'));
+		    $book->save();
 
-	   	return Redirect::action('BookController@getIndex')->with('flash_message','Your changes have been saved.');
+		    # Update tags associated with this book
+		    if(!isset($_POST['tags'])) $_POST['tags'] = array();
+		    $book->updateTags($_POST['tags']);
+
+		   	return Redirect::action('BookController@getIndex')->with('flash_message','Your changes have been saved.');
+
+		}
+		catch(exception $e) {
+	        return Redirect::to('/book')->with('flash_message', 'Error saving changes.');
+	    }
 
 	}
 

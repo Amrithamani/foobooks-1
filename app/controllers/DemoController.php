@@ -9,7 +9,6 @@ class DemoController extends BaseController {
 
 	}
 
-
 	/**
 	* Used for testing cron scheduling
 	*

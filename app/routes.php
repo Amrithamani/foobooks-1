@@ -6,6 +6,7 @@ Note there are no before=>csrf filters in here - it's being handled in the BaseC
 
 
 
+
 Route::get('/classes', function() {
 
 	echo Paste\Pre::render(get_declared_classes(),'');

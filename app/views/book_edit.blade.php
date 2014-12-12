@@ -43,6 +43,14 @@
 			{{ Form::text('purchase_link',$book['purchase_link']); }}
 		</div>
 
+
+		<div class='form-group'>
+			@foreach($tags as $id => $tag)
+				{{ Form::checkbox('tags[]', $id, $book->tags->contains($id)); }} {{ $tag }}
+				&nbsp;&nbsp;&nbsp;
+			@endforeach
+		</div>
+
 		{{ Form::submit('Save'); }}
 
 	{{ Form::close() }}

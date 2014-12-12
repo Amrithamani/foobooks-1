@@ -10,7 +10,6 @@
 
 	{{ Form::open(array('url' => '/book/create')) }}
 
-
 		{{ Form::label('title','Title') }}
 		{{ Form::text('title'); }}
 
@@ -25,6 +24,10 @@
 
 		{{ Form::label('purchase_link','Purchase Link URL') }}
 		{{ Form::text('purchase_link'); }}
+
+		@foreach($tags as $id => $tag)
+			{{ Form::checkbox('tags[]', $id); }} {{ $tag }}
+		@endforeach
 
 		{{ Form::submit('Add'); }}
 

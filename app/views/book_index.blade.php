@@ -36,6 +36,12 @@
 					{{ $book['author']['name'] }} ({{$book['published']}})
 				</p>
 
+				<p>
+					@foreach($book['tags'] as $tag)
+						<span class='tag'>{{{ $tag->name }}}</span>
+					@endforeach
+				</p>
+
 				<img src='{{ $book['cover'] }}'>
 				<br>
 				<a href='{{ $book['purchase_link'] }}'>Purchase...</a>
